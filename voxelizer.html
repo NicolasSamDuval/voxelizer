@@ -67,7 +67,10 @@
 				directionalLight.position.set( 0.25, 0.1, 1 );
 				scene.add( directionalLight );
 
-				// texture
+				var directionalLight2 = new THREE.DirectionalLight( 0xffeedd );
+				directionalLight2.position.set( -0.25, -0.1, -1 );
+				scene.add( directionalLight2 );
+
 
 				var manager = new THREE.LoadingManager();
 				manager.onProgress = function ( item, loaded, total ) {
@@ -76,7 +79,6 @@
 
 				};
 
-				//var texture = new THREE.Texture();
 
 				var onProgress = function ( xhr ) {
 					if ( xhr.lengthComputable ) {
@@ -132,7 +134,9 @@
 				var maxz = Math.ceil(max.z);
 				var far = Math.abs(maxz-minz);
 
-				var vsize = 3;
+				var start = new Date().getTime();
+
+				var vsize = 5;
 				var voxels = [];
 				for (x = Math.floor(min.x); x < Math.ceil(max.x); x+=vsize) {
 					for (y = Math.floor(min.y); y < Math.ceil(max.y); y+=vsize) {
@@ -185,6 +189,8 @@
 					}
 				}
 
+				var voxelCreationEnd = new Date().getTime();
+
 				// Remove loaded object
 				object.position.x = (max.x-min.x) * 1.1;
 
@@ -200,7 +206,12 @@
 					scene.add(mesh);
 				});
 
+				var voxelizationEnd = new Date().getTime();
+
 				console.log("=== DONE");
+				console.log("voxel creation: ", voxelCreationEnd - start, "ms");
+				console.log("voxel scene: ", voxelizationEnd - voxelCreationEnd, "ms");
+				console.log("total: ", voxelizationEnd - start, "ms");
 			}
 
 			function onWindowResize() {
