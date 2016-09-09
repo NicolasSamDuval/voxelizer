@@ -156,26 +156,49 @@
 				return bbox;
 			}
 
-			function distanceTo(point, triangle) {
-				var plane = new THREE.Plane();
-				var projectedPoint = new THREE.Vector3();
-				var closestPoint = new THREE.Vector3();
-				var distance = Infinity;
-
-				// project the point onto the plane of the triangle
-				plane.setFromCoplanarPoints(triangle.a,triangle.b,triangle.c);
-				plane.projectPoint(point,projectedPoint);
-
-				// check if the projection lies within the triangle
-				if(triangle.containsPoint(projectedPoint) === true) {
-					// if so, this is the closest point
-					distance = point.distanceTo(projectedPoint);
-				}
-				return distance;
-			}
-
 			function getKey(voxel) {
 				return voxel.position.x + "/" + voxel.position.y + "/" + voxel.position.z;
+			}
+
+			function createCube(vertices,voxel,vsize) {
+				var p = voxel.position;
+				var size = vsize/2;
+				vertices.push(p.x-size);vertices.push(p.y-size);vertices.push(p.z-size);
+				vertices.push(p.x-size);vertices.push(p.y-size);vertices.push(p.z+size);
+				vertices.push(p.x-size);vertices.push(p.y+size);vertices.push(p.z+size);
+				vertices.push(p.x+size);vertices.push(p.y+size);vertices.push(p.z-size);
+				vertices.push(p.x-size);vertices.push(p.y-size);vertices.push(p.z-size);
+				vertices.push(p.x-size);vertices.push(p.y+size);vertices.push(p.z-size);
+				vertices.push(p.x+size);vertices.push(p.y-size);vertices.push(p.z+size);
+				vertices.push(p.x-size);vertices.push(p.y-size);vertices.push(p.z-size);
+				vertices.push(p.x+size);vertices.push(p.y-size);vertices.push(p.z-size);
+				vertices.push(p.x+size);vertices.push(p.y+size);vertices.push(p.z-size);
+				vertices.push(p.x+size);vertices.push(p.y-size);vertices.push(p.z-size);
+				vertices.push(p.x-size);vertices.push(p.y-size);vertices.push(p.z-size);
+				vertices.push(p.x-size);vertices.push(p.y-size);vertices.push(p.z-size);
+				vertices.push(p.x-size);vertices.push(p.y+size);vertices.push(p.z+size);
+				vertices.push(p.x-size);vertices.push(p.y+size);vertices.push(p.z-size);
+				vertices.push(p.x+size);vertices.push(p.y-size);vertices.push(p.z+size);
+				vertices.push(p.x-size);vertices.push(p.y-size);vertices.push(p.z+size);
+				vertices.push(p.x-size);vertices.push(p.y-size);vertices.push(p.z-size);
+				vertices.push(p.x-size);vertices.push(p.y+size);vertices.push(p.z+size);
+				vertices.push(p.x-size);vertices.push(p.y-size);vertices.push(p.z+size);
+				vertices.push(p.x+size);vertices.push(p.y-size);vertices.push(p.z+size);
+				vertices.push(p.x+size);vertices.push(p.y+size);vertices.push(p.z+size);
+				vertices.push(p.x+size);vertices.push(p.y-size);vertices.push(p.z-size);
+				vertices.push(p.x+size);vertices.push(p.y+size);vertices.push(p.z-size);
+				vertices.push(p.x+size);vertices.push(p.y-size);vertices.push(p.z-size);
+				vertices.push(p.x+size);vertices.push(p.y+size);vertices.push(p.z+size);
+				vertices.push(p.x+size);vertices.push(p.y-size);vertices.push(p.z+size);
+				vertices.push(p.x+size);vertices.push(p.y+size);vertices.push(p.z+size);
+				vertices.push(p.x+size);vertices.push(p.y+size);vertices.push(p.z-size);
+				vertices.push(p.x-size);vertices.push(p.y+size);vertices.push(p.z-size);
+				vertices.push(p.x+size);vertices.push(p.y+size);vertices.push(p.z+size);
+				vertices.push(p.x-size);vertices.push(p.y+size);vertices.push(p.z-size);
+				vertices.push(p.x-size);vertices.push(p.y+size);vertices.push(p.z+size);
+				vertices.push(p.x+size);vertices.push(p.y+size);vertices.push(p.z+size);
+				vertices.push(p.x-size);vertices.push(p.y+size);vertices.push(p.z+size);
+				vertices.push(p.x+size);vertices.push(p.y-size);vertices.push(p.z+size);
 			}
 
 			function voxelize(object) {
@@ -216,7 +239,6 @@
 							for (y = Math.floor(min.y)-Math.floor(min.y)%vsize; y < Math.ceil(max.y+vsize)-Math.ceil(max.y)%vsize; y+=vsize) {
 								for (z = Math.floor(min.z)-Math.floor(min.z)%vsize; z < Math.ceil(max.z+vsize)-Math.ceil(max.z)%vsize; z+=vsize) {
 									var p = new THREE.Vector3(x,y,z);
-									//var distance = distanceTo(p, t);
 									var closest = t.closestPointToPoint(p);
 									var distance = p.distanceTo(closest);
 									if (distance < vsize) {
@@ -244,6 +266,29 @@
 				});
 
 				console.log("Preparing scene...");
+
+				/*var meshes = [];
+				for (i = 0; i < materialIndex; i++) {
+					var material = materials[i];
+					var geometry = new THREE.BufferGeometry();
+					var mesh = new THREE.Mesh( geometry, materials[i] );
+					mesh.vertices = [];
+					meshes.push(mesh);
+				}
+
+				for (var key in voxels) {
+					var voxel = voxels[key];
+					var materialIndex = voxel.materialIndex;
+					var mesh = meshes[materialIndex];
+					var vertices = mesh.vertices;
+					createCube(vertices,voxel,vsize);
+				}
+
+				meshes.forEach(function(mesh) {
+					var geometry = mesh.geometry;
+					geometry.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(mesh.vertices), 3 ) );
+					scene.add(mesh);
+				});*/
 
 				for (var key in voxels) {
 					var voxel = voxels[key];
