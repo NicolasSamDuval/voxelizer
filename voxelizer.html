@@ -94,13 +94,13 @@
 
 
 				var mtlLoader = new THREE.MTLLoader();
-				mtlLoader.setPath( 'http://127.0.0.1:8080/obj/daytona/' );
+				mtlLoader.setPath( 'https://raw.githubusercontent.com/NicolasSamDuval/voxelizer/master/obj/daytona/' );
 				mtlLoader.load( 'obj.mtl', function( materials ) {
 					materials.preload();
 
 					var objLoader = new THREE.OBJLoader();
 					objLoader.setMaterials( materials );
-					objLoader.setPath( 'http://127.0.0.1:8080/obj/daytona/' );
+					objLoader.setPath( 'https://raw.githubusercontent.com/NicolasSamDuval/voxelizer/master/obj/daytona/' );
 					objLoader.load( 'tinker.obj', function ( object ) {
 						//makeTransparent(object);
 						object.position.y = - 60;
