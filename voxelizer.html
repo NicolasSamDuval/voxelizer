@@ -71,6 +71,8 @@
 				directionalLight2.position.set( -0.25, -0.1, -1 );
 				scene.add( directionalLight2 );
 
+				scene.background = new THREE.Color( 0x000000 );
+
 
 				var manager = new THREE.LoadingManager();
 				manager.onProgress = function ( item, loaded, total ) {
@@ -100,11 +102,8 @@
 					objLoader.setMaterials( materials );
 					objLoader.setPath( 'http://127.0.0.1:8080/obj/palace/' );
 					objLoader.load( 'tinker.obj', function ( object ) {
-
-						object.position.y = - 60;
-						object.rotateX(-Math.PI/2);
+						//makeTransparent(object);
 						scene.add(object);
-
 						voxelize(object);
 					}, onProgress, onError );
 				});
@@ -126,8 +125,17 @@
 
 			}
 
+			function makeTransparent(object) {
+				object.children.forEach(function(mesh) {
+					if (!mesh) return;
+					mesh.material.transparent = true;
+					mesh.material.opacity = 0.7;
+					//mesh.material.wireframe = true;
+				});
+			}
+
 			function getTriangleBBox(triangle) {
-				var min = triangle.a;
+				var min = triangle.a.clone();
 				min.x = (triangle.b.x < min.x) ? triangle.b.x : min.x;
 				min.x = (triangle.c.x < min.x) ? triangle.c.x : min.x;
 				min.y = (triangle.b.y < min.y) ? triangle.b.y : min.y;
@@ -135,7 +143,7 @@
 				min.z = (triangle.b.z < min.z) ? triangle.b.z : min.z;
 				min.z = (triangle.c.z < min.z) ? triangle.c.z : min.z;
 
-				var max = triangle.a;
+				var max = triangle.a.clone();
 				max.x = (triangle.b.x > max.x) ? triangle.b.x : max.x;
 				max.x = (triangle.c.x > max.x) ? triangle.c.x : max.x;
 				max.y = (triangle.b.y > max.y) ? triangle.b.y : max.y;
@@ -144,6 +152,7 @@
 				max.z = (triangle.c.z > max.z) ? triangle.c.z : max.z;
 
 				var bbox = {min:min, max:max};
+
 				return bbox;
 			}
 
@@ -170,13 +179,13 @@
 			}
 
 			function voxelize(object) {
-				var vsize = 10;
+				var vsize = 4;
 				var voxels = {};
 				var voxelNb = 0;
 				var materials = []
 				var materialIndex = 0;
 
-				// For each face
+				// For each mesh
 				object.children.forEach(function(mesh) {
 					if (!mesh) return;
 					color = mesh.material.color;
