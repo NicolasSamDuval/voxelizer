@@ -103,6 +103,8 @@
 					objLoader.setPath( 'http://127.0.0.1:8080/obj/palace/' );
 					objLoader.load( 'tinker.obj', function ( object ) {
 						//makeTransparent(object);
+						object.position.y = - 60;
+ 						object.rotateX(-Math.PI/2);
 						scene.add(object);
 						voxelize(object);
 					}, onProgress, onError );
@@ -208,6 +210,8 @@
 				var materials = []
 				var materialIndex = 0;
 
+				var start = new Date().getTime();
+
 				// For each mesh
 				object.children.forEach(function(mesh) {
 					if (!mesh) return;
@@ -288,6 +292,8 @@
 					var geometry = mesh.geometry;
 					geometry.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(mesh.vertices), 3 ) );
 					geometry.computeVertexNormals();
+					mesh.position.y = - 60;
+ 					mesh.rotateX(-Math.PI/2);
 					scene.add(mesh);
 				});
 
@@ -298,7 +304,7 @@
 				var max = bbox.box.max;
 				object.position.x = (max.x-min.x) * 1.1;
 
-				console.log("=== DONE");
+				console.log("=== DONE in ", new Date().getTime() - start, "ms");
 			}
 
 			function voxelizeRayCast(object) {
