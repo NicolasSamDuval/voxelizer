@@ -105,7 +105,7 @@
 						object.rotateX(-Math.PI/2);
 						scene.add(object);
 
-						voxelize(object,materials);
+						voxelize(object);
 					}, onProgress, onError );
 				});
 
@@ -119,11 +119,143 @@
 				controls.dampingFactor = 0.25;
 				controls.enableZoom = true;
 
+				var axisHelper = new THREE.AxisHelper(20);
+				scene.add(axisHelper);
+
 				window.addEventListener( 'resize', onWindowResize, false );
 
 			}
 
-			function voxelize(object, materials) {
+			function getTriangleBBox(triangle) {
+				var min = triangle.a;
+				min.x = (triangle.b.x < min.x) ? triangle.b.x : min.x;
+				min.x = (triangle.c.x < min.x) ? triangle.c.x : min.x;
+				min.y = (triangle.b.y < min.y) ? triangle.b.y : min.y;
+				min.y = (triangle.c.y < min.y) ? triangle.c.y : min.y;
+				min.z = (triangle.b.z < min.z) ? triangle.b.z : min.z;
+				min.z = (triangle.c.z < min.z) ? triangle.c.z : min.z;
+
+				var max = triangle.a;
+				max.x = (triangle.b.x > max.x) ? triangle.b.x : max.x;
+				max.x = (triangle.c.x > max.x) ? triangle.c.x : max.x;
+				max.y = (triangle.b.y > max.y) ? triangle.b.y : max.y;
+				max.y = (triangle.c.y > max.y) ? triangle.c.y : max.y;
+				max.z = (triangle.b.z > max.z) ? triangle.b.z : max.z;
+				max.z = (triangle.c.z > max.z) ? triangle.c.z : max.z;
+
+				var bbox = {min:min, max:max};
+				return bbox;
+			}
+
+			function distanceTo(point, triangle) {
+				var plane = new THREE.Plane();
+				var projectedPoint = new THREE.Vector3();
+				var closestPoint = new THREE.Vector3();
+				var distance = Infinity;
+
+				// project the point onto the plane of the triangle
+				plane.setFromCoplanarPoints(triangle.a,triangle.b,triangle.c);
+				plane.projectPoint(point,projectedPoint);
+
+				// check if the projection lies within the triangle
+				if(triangle.containsPoint(projectedPoint) === true) {
+					// if so, this is the closest point
+					distance = point.distanceTo(projectedPoint);
+				}
+				return distance;
+			}
+
+			function getKey(voxel) {
+				return voxel.position.x + "/" + voxel.position.y + "/" + voxel.position.z;
+			}
+
+			function voxelize(object) {
+				var vsize = 10;
+				var voxels = {};
+				var voxelNb = 0;
+				var materials = []
+				var materialIndex = 0;
+
+				// For each face
+				object.children.forEach(function(mesh) {
+					if (!mesh) return;
+					color = mesh.material.color;
+					var material = new THREE.MeshPhongMaterial({color: color});
+					materials.push(material);
+
+					if (mesh.geometry.attributes.position.itemSize != 3) {
+						console.error("itemSize is not 3");
+						return
+					}
+
+					console.log("Start mesh voxelixation: ", mesh);
+
+					var vertices = mesh.geometry.attributes.position.array;
+					for (i = 0; i < vertices.length ; i += 9) {
+						var a = new THREE.Vector3(vertices[i],vertices[i+1],vertices[i+2]);
+						var b = new THREE.Vector3(vertices[i+3],vertices[i+4],vertices[i+5]);
+						var c = new THREE.Vector3(vertices[i+6],vertices[i+7],vertices[i+8]);
+						var t = new THREE.Triangle(a,b,c);
+
+						// Get bbox
+						var bbox = getTriangleBBox(t);
+						var min = bbox.min;
+						var max = bbox.max;
+
+						// Voxelize the triangle
+						for (x = Math.floor(min.x)-Math.floor(min.x)%vsize; x < Math.ceil(max.x+vsize)-Math.ceil(max.x)%vsize; x+=vsize) {
+							for (y = Math.floor(min.y)-Math.floor(min.y)%vsize; y < Math.ceil(max.y+vsize)-Math.ceil(max.y)%vsize; y+=vsize) {
+								for (z = Math.floor(min.z)-Math.floor(min.z)%vsize; z < Math.ceil(max.z+vsize)-Math.ceil(max.z)%vsize; z+=vsize) {
+									var p = new THREE.Vector3(x,y,z);
+									//var distance = distanceTo(p, t);
+									var closest = t.closestPointToPoint(p);
+									var distance = p.distanceTo(closest);
+									if (distance < vsize) {
+										// Create voxel
+										var voxel = {position:p,materialIndex:materialIndex,distance:distance};
+										var key = getKey(voxel);
+										if (key in voxels) {
+											// Check distance
+											var other = voxels[key];
+											if (distance < other.distance) {
+												voxels[key] = voxel;
+											}
+										} else {
+											voxels[key] = voxel;
+											voxelNb++
+										}
+									}
+								}
+							}
+						}
+					}
+
+					materialIndex++;
+					console.log("voxels: ", voxelNb);
+				});
+
+				console.log("Preparing scene...");
+
+				for (var key in voxels) {
+					var voxel = voxels[key];
+					var geometry = new THREE.BoxBufferGeometry(vsize,vsize,vsize);
+					var mesh = new THREE.Mesh( geometry, materials[voxel.materialIndex] );
+					var position = voxel.position;
+					mesh.position.set(position.x,position.y,position.z);
+					scene.add(mesh);
+				}
+
+				// Move model
+				var bbox = new THREE.BoundingBoxHelper(object, 0xff0000);
+				bbox.update();
+				var min = bbox.box.min;
+				var max = bbox.box.max;
+				object.position.x = (max.x-min.x) * 1.1;
+
+				console.log("=== DONE");
+			}
+
+			function voxelizeRayCast(object) {
 				var bbox = new THREE.BoundingBoxHelper(object, 0xff0000);
 				bbox.update();
 				//scene.add(bbox);
