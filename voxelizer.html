@@ -94,13 +94,13 @@
 
 
 				var mtlLoader = new THREE.MTLLoader();
-				mtlLoader.setPath( 'https://raw.githubusercontent.com/NicolasSamDuval/voxelizer/master/obj/daytona/' );
+				mtlLoader.setPath( 'https://raw.githubusercontent.com/NicolasSamDuval/voxelizer/master/obj/palace/' );
 				mtlLoader.load( 'obj.mtl', function( materials ) {
 					materials.preload();
 
 					var objLoader = new THREE.OBJLoader();
 					objLoader.setMaterials( materials );
-					objLoader.setPath( 'https://raw.githubusercontent.com/NicolasSamDuval/voxelizer/master/obj/daytona/' );
+					objLoader.setPath( 'https://raw.githubusercontent.com/NicolasSamDuval/voxelizer/master/obj/palace/' );
 					objLoader.load( 'tinker.obj', function ( object ) {
 						//makeTransparent(object);
 						object.position.y = - 60;
@@ -205,7 +205,7 @@
 			}
 
 			function voxelize(object) {
-				var vsize = 1;
+				var vsize = 2;
 				var voxels = {};
 				var voxelNb = 0;
 				var materials = []
